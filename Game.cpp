@@ -1,11 +1,17 @@
 #include "game.h"
 #include <random>
 #include <time.h>
+
+
 Game::Game() : Engine() // 
 {
+	SetConsoleTitleA("SnakeGame");
 	ptrSnake = std::move(std::make_unique<Snake>());
 	ptrSnake->dir = Direction::down;
 	APPLE_PLACED = FALSE;
+	SCORE = 0;
+	drawTable();
+
 }
 
 Game::~Game()
@@ -14,36 +20,31 @@ Game::~Game()
 
 void Game::KeyPressed(int btnCode)
 {
-	if (btnCode == 119) //w
+	ptrSnake->prev_dir = ptrSnake->dir;
+	if ((btnCode == int('W')) || (btnCode == int('w'))) //w
 	{
 		ptrSnake->dir = Direction::up;
 	}
-	else if (btnCode == 115)//s
+	else if ((btnCode == int('S')) || (btnCode == int('s')))//s
 	{
 		ptrSnake->dir = Direction::down;
 	}
-	else if (btnCode == 97) //a
+	else if ((btnCode == int('A')) || (btnCode == int('a'))) //a
 	{
 		ptrSnake->dir = Direction::left;
 	}
-	else if (btnCode == 100) //d
+	else if ((btnCode == int('D')) || (btnCode == int('d'))) //d
 	{
 		ptrSnake->dir = Direction::right;
 	}
 }
 
-void Game::UpdateF()
+void Game::Update()
 {
-
 	ptrSnake->move();
-	drawTable();
 	drawApple();
 	drawSnake();
-
-	//render map
-	//render score
-	//render snake
-	//render apple
+	drawScore();
 }
 
 void Game::drawTable()
@@ -71,9 +72,9 @@ void Game::drawApple()
 	if (!APPLE_PLACED)
 	{
 		srand(time(NULL));
-		int apple_x = 1 + rand() % (ScreenX - 12); 	// get random accessable place
+		int apple_x = 1 + (rand() % (ScreenX - 13)); 	// get random accessable place
 		srand(time(NULL));
-		int apple_y = 1 + rand() % (ScreenY - 1);
+		int apple_y = 1 + (rand() % (ScreenY - 2));
 
 		COORD check{ apple_x,apple_y };
 		while (GetChar(apple_x, apple_y) == snake)
@@ -88,17 +89,89 @@ void Game::drawApple()
 	}
 }
 
+void Game::drawScore()
+{
+	std::wstring scr = std::to_wstring(SCORE);
+
+	if (GAME_OVER)
+	{
+		int y = int(ScreenY / 2) + 2;
+		int x = int(ScreenX / 2) - 10 + 5;
+		for (int i = 0; i < scr.size(); i++)
+			SetChar(x, y, scr[i]);
+	}
+	else
+	{
+		for (int i = 0, x = ScreenX - 7; i < scr.size(); x++, i++)
+		{
+			SetChar(x, 6, scr[i]);  // possible overlfow with big nunmbers
+		}
+
+	}
+}
+
 void Game::Collision()
 {
+
 	Coord* head = ptrSnake->ptrBody->data();
+	Coord* neck = &ptrSnake->ptrBody->at(1);
+
 	if (GetChar(head->x, head->y) == bounds)
+	{
 		GAME_OVER = TRUE;
+		return;
+	}
+
+
 	else if (GetChar(head->x, head->y) == apple)
 	{
 		ptrSnake->addPiece();
 		APPLE_PLACED = FALSE;
-
+		SCORE++;
+		return;
 	}
+
+
+	switch (ptrSnake->dir)    // forbid turn inside snake and check for self eating
+	{
+	case left:
+		if ((head->x - 1 == neck->x) && (head->y == neck->y))
+		{
+			ptrSnake->dir = ptrSnake->prev_dir;
+			return;
+		}
+		if (GetChar(head->x - 1, head->y) == snake)
+			GAME_OVER = TRUE;
+		break;
+	case up:
+		if ((head->x == neck->x) && (head->y - 1 == neck->y))
+		{
+			ptrSnake->dir = ptrSnake->prev_dir;
+			return;
+		}
+		if (GetChar(head->x , head->y-1) == snake)
+			GAME_OVER = TRUE;
+		break;
+	case right:
+		if ((head->x + 1 == neck->x) && (head->y == neck->y))
+		{
+			ptrSnake->dir = ptrSnake->prev_dir;
+			return;
+		}
+		if (GetChar(head->x + 1, head->y) == snake)
+			GAME_OVER = TRUE;
+		break;
+	case down:
+		if ((head->x  == neck->x) && (head->y + 1 == neck->y))
+		{
+			ptrSnake->dir = ptrSnake->prev_dir;
+			return;
+		}
+		if (GetChar(head->x, head->y+1) == snake)
+			GAME_OVER = TRUE;
+		break;
+	}
+
 }
 
 void Game::drawSnake()
@@ -114,6 +187,7 @@ void Game::drawSnake()
 	{
 		SetChar(piece.x, piece.y, snake);
 	}
+
 }
 
 void Game::GameOver()
@@ -133,7 +207,7 @@ void Game::GameOver()
 	{
 		SetChar(x, int(ScreenY / 2)+1, score.at(i));
 	}
-
+	drawScore();
 };
 
 

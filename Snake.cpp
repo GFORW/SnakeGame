@@ -23,26 +23,32 @@ void Snake::addPiece()
 	ptrBody->insert(ptrBody->end(), ptrOldBody->begin(), ptrOldBody->end());
 }
 
-void Snake::move()
+void Snake::move()  // move to game?
 {
+
 	Coord* head = ptrBody->data();
+	Coord temp_head = *head;
+	// check for forbiden movement
+
 	*ptrOldBody = *ptrBody;
 	switch (dir)
 	{
 	case left:
-		head->x -= 1;
+		temp_head.x -= 1;
 		break;
 	case up:
-		head->y -= 1;
+		temp_head.y -= 1;
 		break;
 	case right:
-		head->x += 1;
+		temp_head.x += 1;
 		break;
 	case down:
-		head->y += 1;
+		temp_head.y += 1;
 		break;
 	}
-
+	if ((temp_head.x == ptrBody->at(1).x) && (temp_head.y == ptrBody->at(1).y))
+		return;
+	else *head = temp_head;
 	// move tail
 	for (size_t i = 1; i < ptrBody->size(); i++)
 	{

@@ -13,7 +13,7 @@ public:
 
 
 	virtual void KeyPressed(int Code) {};
-	virtual void UpdateF() {};
+	virtual void Update() {};
 
 
 	void SetChar(int x, int y, wchar_t c) ;

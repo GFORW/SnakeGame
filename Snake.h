@@ -25,6 +25,7 @@ class Snake
 {
 public:
 	Direction dir;
+	Direction prev_dir;
 	Snake(int x = 5 , int y =5);
 	~Snake();
 	void addPiece();

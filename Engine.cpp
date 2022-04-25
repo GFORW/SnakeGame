@@ -73,7 +73,7 @@ void Engine::Render()
 {
 	WORD attr{};
 	DWORD Chars;
-
+	
 	// Draw Screen
 	for (int i = 0; i < ScreenX; i++)
 		for (int j = 0; j < ScreenY; j++)
@@ -99,7 +99,7 @@ void Engine::Run()
 
 	while (1)
 	{
-		UpdateF();
+		Update();
 		if (GAME_OVER)
 		{
 			GameOver();
