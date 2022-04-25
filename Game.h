@@ -18,11 +18,13 @@ public:
 	virtual void UpdateF();
 	virtual void GameOver();
 
-	bool Collision();
+	void Collision();
 
 	void drawSnake();
 	void drawTable();
+	void drawApple();
 
 	std::unique_ptr<Snake> ptrSnake;
 	
+	bool APPLE_PLACED;
 };

@@ -25,9 +25,9 @@ class Snake
 {
 public:
 	Direction dir;
-	Snake(int x = 1 , int y =1);
+	Snake(int x = 5 , int y =5);
 	~Snake();
-	void addPiece(int x, int y);
+	void addPiece();
 	void move();
 	Coord getCoord(int i);
 	int getLength();

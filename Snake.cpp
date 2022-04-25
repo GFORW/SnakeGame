@@ -5,6 +5,8 @@
 Snake::Snake(int x, int y)  // set starting position
 {
 	body.push_back(Coord(x,y));
+	body.push_back(Coord(x, y-1));
+
 	oldbody = body;
 	ptrBody = std::make_unique<std::vector<Coord>>(body);
 	ptrOldBody = std::make_unique<std::vector<Coord>>(oldbody);;
@@ -14,9 +16,11 @@ Snake::~Snake()
 {
 }
 
-void Snake::addPiece(int x, int y)
+void Snake::addPiece()
 {
-	body.push_back(Coord(x,y));
+	ptrBody->erase(ptrBody->begin() + 1, ptrBody->end());  // preallocate memory
+	ptrBody->reserve(ptrBody->size() + ptrBody->size());
+	ptrBody->insert(ptrBody->end(), ptrOldBody->begin(), ptrOldBody->end());
 }
 
 void Snake::move()
@@ -37,6 +41,12 @@ void Snake::move()
 	case down:
 		head->y += 1;
 		break;
+	}
+
+	// move tail
+	for (size_t i = 1; i < ptrBody->size(); i++)
+	{
+		ptrBody->at(i) = ptrOldBody->at(i-1);
 	}
 }
 

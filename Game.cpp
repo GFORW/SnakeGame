@@ -1,9 +1,11 @@
 #include "game.h"
-
+#include <random>
+#include <time.h>
 Game::Game() : Engine() // 
 {
 	ptrSnake = std::move(std::make_unique<Snake>());
 	ptrSnake->dir = Direction::down;
+	APPLE_PLACED = FALSE;
 }
 
 Game::~Game()
@@ -35,6 +37,7 @@ void Game::UpdateF()
 
 	ptrSnake->move();
 	drawTable();
+	drawApple();
 	drawSnake();
 
 	//render map
@@ -52,7 +55,7 @@ void Game::drawTable()
 		{
 			if ((y == 0) || (x == 0) || x == ScreenX-1 || y == ScreenY-1)
 				SetChar(x, y, bounds);
-			if ((ScreenX - x) == 11)
+			if ((ScreenX - x) == 11)  // make score part dynamicly adjustable
 				SetChar(x, y, bounds);
 		}
 	}
@@ -63,22 +66,44 @@ void Game::drawTable()
 	}
 }
 
-bool Game::Collision()
+void Game::drawApple()
 {
-	Coord* head = ptrSnake->ptrOldBody->data();
+	if (!APPLE_PLACED)
+	{
+		srand(time(NULL));
+		int apple_x = 1 + rand() % (ScreenX - 12); 	// get random accessable place
+		srand(time(NULL));
+		int apple_y = 1 + rand() % (ScreenY - 1);
+
+		COORD check{ apple_x,apple_y };
+		while (GetChar(apple_x, apple_y) == snake)
+		{
+			srand(time(NULL));
+			int apple_x = 1 + rand() % ScreenX - 12;
+			srand(time(NULL));
+			int apple_y = 1 + rand() % ScreenY - 1;
+		}
+		SetChar(apple_x, apple_y, apple);
+		APPLE_PLACED = TRUE;
+	}
+}
+
+void Game::Collision()
+{
+	Coord* head = ptrSnake->ptrBody->data();
 	if (GetChar(head->x, head->y) == bounds)
-		return true;
-	else
-		return false;
+		GAME_OVER = TRUE;
+	else if (GetChar(head->x, head->y) == apple)
+	{
+		ptrSnake->addPiece();
+		APPLE_PLACED = FALSE;
+
+	}
 }
 
 void Game::drawSnake()
 {
-	if (Collision())
-	{
-		GAME_OVER = TRUE;
-		return;
-	}
+	Collision();
 
 	for (auto piece : *ptrSnake->ptrOldBody.get())  	// delete old snake
 	{
