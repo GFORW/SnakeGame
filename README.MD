@@ -1,1 +1,3 @@
-Snake Game for Console
+## Snake Game for Console
+
+![](SnakeGame.gif)
