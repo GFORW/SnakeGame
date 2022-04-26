@@ -10,6 +10,7 @@ Game::Game() : Engine() //
 	ptrSnake->dir = Direction::down;
 	APPLE_PLACED = FALSE;
 	SCORE = 0;
+	GameSpeed = 150;
 	drawTable();
 }
 
@@ -40,7 +41,6 @@ void Game::KeyPressed(int btnCode)
 
 void Game::Update()
 {
-	ptrSnake->move();
 	drawApple();
 	drawSnake();
 	drawScore();
@@ -109,74 +109,72 @@ void Game::drawScore()
 	}
 }
 
+
+void Game::move()  
+{
+	// move tail
+	for (size_t i = 1; i < ptrSnake->ptrBody->size(); i++)
+	{
+		ptrSnake->ptrBody->at(i) = ptrSnake->ptrOldBody->at(i - 1);
+	}
+}
+
+
+
 void Game::Collision()
 {
+	COORD head{ ptrSnake->ptrBody->at(0) };
+	COORD neck{ ptrSnake->ptrBody->at(1) };
+	(*ptrSnake->ptrOldBody) = (*ptrSnake->ptrBody);
 
-	COORD* head = ptrSnake->ptrBody->data();
-	COORD* neck = &ptrSnake->ptrBody->at(1);
+	switch (ptrSnake->dir)
+	{
+	case left:
+		head.X -= 1;
+		break;
+	case up:
+		head.Y -= 1;
+		break;
+	case right:
+		head.X += 1;
+		break;
+	case down:
+		head.Y += 1;
+		break;
+	}
 
-	if (GetChar(head->X, head->Y) == bounds)
+	if ((head.X == neck.X) && (head.Y == neck.Y)) // self-turning;
+	{
+		ptrSnake->dir = ptrSnake->prev_dir;
+		Collision();
+		return;
+	}
+	else if (GetChar(head.X, head.Y) == snake) //self-eating
 	{
 		GAME_OVER = TRUE;
 		return;
 	}
 
+	if (GetChar(head.X, head.Y) == bounds)
+	{
+		GAME_OVER = TRUE;
+		return;
+	}
 
-	else if (GetChar(head->X, head->Y) == apple)
+	if (GetChar(head.X, head.Y) == apple)
 	{
 		ptrSnake->addPiece();
 		APPLE_PLACED = FALSE;
 		SCORE++;
-		return;
+		ChangeSpeed(10);
 	}
-
-
-	switch (ptrSnake->dir)    // forbid turn inside snake and check for self eating
-	{
-	case left:
-		if ((head->X - 1 == neck->X) && (head->Y == neck->Y))
-		{
-			ptrSnake->dir = ptrSnake->prev_dir;
-			return;
-		}
-		if (GetChar(head->X - 1, head->Y) == snake)
-			GAME_OVER = TRUE;
-		break;
-	case up:
-		if ((head->X == neck->X) && (neck->Y - 1 == neck->Y))
-		{
-			ptrSnake->dir = ptrSnake->prev_dir;
-			return;
-		}
-		if (GetChar(head->X , head->Y-1) == snake)
-			GAME_OVER = TRUE;
-		break;
-	case right:
-		if ((head->X + 1 == neck->X) && (neck->Y == neck->Y))
-		{
-			ptrSnake->dir = ptrSnake->prev_dir;
-			return;
-		}
-		if (GetChar(head->X + 1, head->Y) == snake)
-			GAME_OVER = TRUE;
-		break;
-	case down:
-		if ((head->X  == neck->X) && (neck->Y + 1 == neck->Y))
-		{
-			ptrSnake->dir = ptrSnake->prev_dir;
-			return;
-		}
-		if (GetChar(head->X, head->Y+1) == snake)
-			GAME_OVER = TRUE;
-		break;
-	}
-
+	ptrSnake->ptrBody->at(0) = head; //  step
 }
 
 void Game::drawSnake()
 {
 	Collision();
-
+	move();
 	for (auto piece : *ptrSnake->ptrOldBody.get())  	// delete old snake
 	{
 		SetChar(piece.X, piece.Y, L' ');
@@ -186,7 +184,6 @@ void Game::drawSnake()
 	{
 		SetChar(piece.X, piece.Y, snake);
 	}
-
 }
 
 void Game::GameOver()

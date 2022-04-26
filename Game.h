@@ -24,10 +24,10 @@ public:
 	void drawTable();
 	void drawApple();
 	void drawScore();
+	void move();
 
 	std::unique_ptr<Snake> ptrSnake;
 	
-	Direction prev_dir;
 	int SCORE;
 	bool APPLE_PLACED;
 };

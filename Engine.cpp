@@ -9,8 +9,6 @@ Engine::Engine(int X, int Y) : ScreenX(X), ScreenY(Y)
 {
 	hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
 	hConsoleIn = GetStdHandle(STD_INPUT_HANDLE);
-	X += 3;
-	ScreenX += 3;
 	// if x,y > max size;
 	_CONSOLE_SCREEN_BUFFER_INFO info;
 	GetConsoleScreenBufferInfo(hConsole, &info);
@@ -104,7 +102,6 @@ void Engine::Render()
 		for (int j = 0; j < ScreenY; j++)
 		{
 			COORD pos = { i,j };
-
 			FillConsoleOutputCharacter(hConsole, Screen.at(i).at(j), 1, pos, &Chars);
 		}
 }
@@ -124,6 +121,13 @@ void Engine::Run()
 
 	while (1)
 	{
+		if (_kbhit())
+		{
+			KeyPressed(_getch());
+			if (!FlushConsoleInputBuffer(hConsoleIn))
+				std::cout << "FlushConsoleInputBuffer failed with error " << GetLastError();
+		}
+
 		Update();
 		if (GAME_OVER)
 		{
@@ -133,18 +137,13 @@ void Engine::Run()
 		}	
 		Render();
 
-		if (_kbhit())
-		{
-			KeyPressed(_getch());
-			if (!FlushConsoleInputBuffer(hConsoleIn))
-				std::cout << "FlushConsoleInputBuffer failed with error " << GetLastError();
-		}
-
 		Sleep(GameSpeed);
 	}
 	std::cin.get();
 }
+
 void Engine::ChangeSpeed(int sec)
 {
-	GameSpeed += sec;
+	if (GameSpeed == 10) return;
+	GameSpeed -= sec;
 }

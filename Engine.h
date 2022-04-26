@@ -26,11 +26,12 @@ public:
 	int ScreenX;
 	int ScreenY;
 
-	bool MENU;
+	bool MENU = 0;
 	bool GAME_OVER = 0;
+	int GameSpeed;
+
 private:
 	void Render();
-	int GameSpeed = 60;
 
 
 	HANDLE hConsole;

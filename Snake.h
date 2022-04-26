@@ -15,18 +15,15 @@ class Snake
 public:
 	Direction dir;
 	Direction prev_dir;
-	Snake(int x = 5 , int y =5);
+
+	Snake(int x = 5 , int y = 5);
 	~Snake();
+
 	void addPiece();
-	void move();
-	COORD getCOORD(int i);
-	int getLength();
+
 	std::unique_ptr<std::vector<COORD>> ptrBody;
 	std::unique_ptr<std::vector<COORD>> ptrOldBody;
 
-private:
-	std::vector<COORD> body;
-	std::vector<COORD> oldbody;
 };
 
 
