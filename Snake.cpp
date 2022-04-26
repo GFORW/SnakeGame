@@ -4,12 +4,12 @@
 
 Snake::Snake(int x, int y)  // set starting position
 {
-	body.push_back(Coord(x,y));
-	body.push_back(Coord(x, y-1));
+	body.push_back(COORD{ (SHORT)x, (SHORT)y });
+	body.push_back(COORD{(SHORT)x, (SHORT)(y - 1) });
 
 	oldbody = body;
-	ptrBody = std::make_unique<std::vector<Coord>>(body);
-	ptrOldBody = std::make_unique<std::vector<Coord>>(oldbody);;
+	ptrBody = std::make_unique<std::vector<COORD>>(body);
+	ptrOldBody = std::make_unique<std::vector<COORD>>(oldbody);;
 }
 
 Snake::~Snake()
@@ -26,27 +26,27 @@ void Snake::addPiece()
 void Snake::move()  // move to game?
 {
 
-	Coord* head = ptrBody->data();
-	Coord temp_head = *head;
-	// check for forbiden movement
+	COORD* head = ptrBody->data();
+	COORD temp_head = *head;
 
 	*ptrOldBody = *ptrBody;
 	switch (dir)
 	{
 	case left:
-		temp_head.x -= 1;
+		temp_head.X -= 1;
 		break;
 	case up:
-		temp_head.y -= 1;
+		temp_head.Y -= 1;
 		break;
 	case right:
-		temp_head.x += 1;
+		temp_head.X += 1;
 		break;
 	case down:
-		temp_head.y += 1;
+		temp_head.Y += 1;
 		break;
 	}
-	if ((temp_head.x == ptrBody->at(1).x) && (temp_head.y == ptrBody->at(1).y))
+	// check for forbiden movement
+	if ((temp_head.X == ptrBody->at(1).X) && (temp_head.Y == ptrBody->at(1).Y))
 		return;
 	else *head = temp_head;
 	// move tail
@@ -56,7 +56,7 @@ void Snake::move()  // move to game?
 	}
 }
 
-Coord Snake::getCoord(int i)
+COORD Snake::getCOORD(int i)
 {
 	return body.at(i);
 }
@@ -66,24 +66,3 @@ int Snake::getLength()
 	return body.size();
 }
 
-
-////
-//// Coord Struct
-////
-
-
-Coord::Coord(int X, int Y)
-{
-	x = X;
-	y = Y;
-}
-
-Coord::Coord()
-{
-	x = 0;
-	y = 0;
-}
-
-Coord::~Coord()
-{
-}

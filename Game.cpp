@@ -11,7 +11,6 @@ Game::Game() : Engine() //
 	APPLE_PLACED = FALSE;
 	SCORE = 0;
 	drawTable();
-
 }
 
 Game::~Game()
@@ -113,17 +112,17 @@ void Game::drawScore()
 void Game::Collision()
 {
 
-	Coord* head = ptrSnake->ptrBody->data();
-	Coord* neck = &ptrSnake->ptrBody->at(1);
+	COORD* head = ptrSnake->ptrBody->data();
+	COORD* neck = &ptrSnake->ptrBody->at(1);
 
-	if (GetChar(head->x, head->y) == bounds)
+	if (GetChar(head->X, head->Y) == bounds)
 	{
 		GAME_OVER = TRUE;
 		return;
 	}
 
 
-	else if (GetChar(head->x, head->y) == apple)
+	else if (GetChar(head->X, head->Y) == apple)
 	{
 		ptrSnake->addPiece();
 		APPLE_PLACED = FALSE;
@@ -135,39 +134,39 @@ void Game::Collision()
 	switch (ptrSnake->dir)    // forbid turn inside snake and check for self eating
 	{
 	case left:
-		if ((head->x - 1 == neck->x) && (head->y == neck->y))
+		if ((head->X - 1 == neck->X) && (head->Y == neck->Y))
 		{
 			ptrSnake->dir = ptrSnake->prev_dir;
 			return;
 		}
-		if (GetChar(head->x - 1, head->y) == snake)
+		if (GetChar(head->X - 1, head->Y) == snake)
 			GAME_OVER = TRUE;
 		break;
 	case up:
-		if ((head->x == neck->x) && (head->y - 1 == neck->y))
+		if ((head->X == neck->X) && (neck->Y - 1 == neck->Y))
 		{
 			ptrSnake->dir = ptrSnake->prev_dir;
 			return;
 		}
-		if (GetChar(head->x , head->y-1) == snake)
+		if (GetChar(head->X , head->Y-1) == snake)
 			GAME_OVER = TRUE;
 		break;
 	case right:
-		if ((head->x + 1 == neck->x) && (head->y == neck->y))
+		if ((head->X + 1 == neck->X) && (neck->Y == neck->Y))
 		{
 			ptrSnake->dir = ptrSnake->prev_dir;
 			return;
 		}
-		if (GetChar(head->x + 1, head->y) == snake)
+		if (GetChar(head->X + 1, head->Y) == snake)
 			GAME_OVER = TRUE;
 		break;
 	case down:
-		if ((head->x  == neck->x) && (head->y + 1 == neck->y))
+		if ((head->X  == neck->X) && (neck->Y + 1 == neck->Y))
 		{
 			ptrSnake->dir = ptrSnake->prev_dir;
 			return;
 		}
-		if (GetChar(head->x, head->y+1) == snake)
+		if (GetChar(head->X, head->Y+1) == snake)
 			GAME_OVER = TRUE;
 		break;
 	}
@@ -180,12 +179,12 @@ void Game::drawSnake()
 
 	for (auto piece : *ptrSnake->ptrOldBody.get())  	// delete old snake
 	{
-		SetChar(piece.x, piece.y, L' ');
+		SetChar(piece.X, piece.Y, L' ');
 	}
 
 	for (auto piece : *ptrSnake->ptrBody.get())  // draw new snake
 	{
-		SetChar(piece.x, piece.y, snake);
+		SetChar(piece.X, piece.Y, snake);
 	}
 
 }
@@ -209,6 +208,4 @@ void Game::GameOver()
 	}
 	drawScore();
 };
-
-
 
