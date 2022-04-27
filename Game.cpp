@@ -2,17 +2,15 @@
 #include <random>
 #include <time.h>
 
-
 Game::Game() : Engine() // 
 {
 	SetConsoleTitleA("SnakeGame");
 	ptrSnake = std::move(std::make_unique<Snake>());
 	ptrSnake->dir = Direction::down;
-	APPLE_PLACED = FALSE;
 	GameSpeed = 150;
 	WIN_CONDITION = 100;
 	play = TRUE;
-	drawTable();
+	drawMenu();
 }
 
 Game::~Game()
@@ -42,17 +40,33 @@ void Game::KeyPressed(int btnCode)
 
 void Game::Update()
 {
+	if (MENU == 1)
+	{
+		MENU++;
+		return;
+	}
+	else if (MENU == 2)
+	{
+		std::cin.ignore();
+		MENU++;
+		for (int i = 0; i < ScreenX; i++)
+			for (int j = 0; j < ScreenY; j++)
+				SetChar(i, j, L' ');
+	}
 
+	drawTable();
 	drawApple();
 	drawSnake();
 	if (GAME_OVER)
 	{
 		GameOver();
+		drawScore();
 		return;
 	}
 	if (WON)
 	{
 		Win();
+		drawScore();
 		return;
 	}
 
@@ -61,6 +75,7 @@ void Game::Update()
 
 void Game::drawTable()
 {
+
 	// fill bounds
 	for (int y = 0; y < ScreenY; y++)
 	{
@@ -73,7 +88,7 @@ void Game::drawTable()
 		}
 	}
 	std::string score = "SCORE";
-	for (int i=0, x = ScreenX - 8; i < score.size();x++,i++)
+	for (size_t i=0, x = ScreenX - 8; i < score.size();x++,i++)
 	{
 			SetChar(x, 5, score.at(i));
 	}
@@ -83,17 +98,17 @@ void Game::drawApple()
 {
 	if (!APPLE_PLACED)
 	{
-		srand(time(NULL));
-		int apple_x = 1 + (rand() % (ScreenX - 13)); 	// get random accessable place
-		srand(time(NULL));
-		int apple_y = 1 + (rand() % (ScreenY - 2));
+		srand((unsigned int)time(nullptr));
+		short apple_x = 1 + (rand() % (ScreenX - 13)); 	// get random accessable place
+		srand((unsigned int)time(nullptr));
+		short apple_y = 1 + (rand() % (ScreenY - 2));
 
 		COORD check{ apple_x,apple_y };
 		while (GetChar(apple_x, apple_y) == snake)
 		{
-			srand(time(NULL));
+			srand((unsigned int)time(NULL));
 			int apple_x = 1 + rand() % ScreenX - 12;
-			srand(time(NULL));
+			srand((unsigned int)time(NULL));
 			int apple_y = 1 + rand() % ScreenY - 1;
 		}
 		SetChar(apple_x, apple_y, apple);
@@ -104,7 +119,7 @@ void Game::drawApple()
 void Game::drawScore()
 {
 	std::wstring scr = std::to_wstring(SCORE);
-	for (int i = 0, x = ScreenX - 7; i < scr.size(); x++, i++)
+	for (size_t i = 0, x = ScreenX - 7; i < scr.size(); x++, i++)
 	{
 		SetChar(x, 6, scr[i]); 
 	}
@@ -160,7 +175,7 @@ void Game::Collision()
 		GAME_OVER = TRUE;
 	}
 
-	if (GetChar(head.X, head.Y) == apple)
+	if (GetChar(head.X, head.Y) == apple) // redo logic for score updare
 	{
 		ptrSnake->addPiece();
 		APPLE_PLACED = FALSE;
@@ -191,26 +206,54 @@ void Game::drawSnake()
 
 }
 
+void Game::drawMenu()
+{
+	std::string text = "SNAKE GAME";
+	std::string text1 = "TO WIN - EAT " + std::to_string(WIN_CONDITION) + " APPLES";
+	std::string text2 = "DO NOT EAT BORDERS OR YOUR TAIL";
+	std::string text3 = "PRESS ANY BUTTON TO START";
+
+	for (size_t i = 0, x = int(ScreenX / 2) - text.size(); i < text.size(); x++, i++)
+	{
+		SetChar(x, int(ScreenY / 2), text.at(i));
+	}
+	for (size_t i = 0, x = int(ScreenX / 2) - text1.size() / 2; i < text1.size(); x++, i++)
+	{
+		SetChar(x, int(ScreenY / 2) + 1, text1.at(i));
+	}
+	for (size_t i = 0, x = int(ScreenX / 2) - text2.size() / 2; i < text2.size(); x++, i++)
+	{
+		SetChar(x, int(ScreenY / 2) + 2, text2.at(i));
+	}
+	for (size_t i = 0, x = int(ScreenX / 2) - text3.size() / 2; i < text3.size(); x++, i++)
+	{
+		SetChar(x, int(ScreenY - 2), text3.at(i));
+	}
+
+	MENU++;
+}
+
 void Game::GameOver()
 {
 	play = FALSE;
 	std::string gm_ov = "GAME OVER";
-	for (int i = 0, x = int(ScreenX/2)- gm_ov.size(); i < gm_ov.size(); x++, i++)
+	for (size_t i = 0, x = int(ScreenX/2)- gm_ov.size(); i < gm_ov.size(); x++, i++)
 	{
 		SetChar(x, int(ScreenY/2), gm_ov.at(i));
 	}
+	drawScore();
 };
 
 void Game::Win()
 {
 	play = FALSE;
-	std::string gm_ov = "GAME WON";
-	for (int i = 0, x = int(ScreenX / 2) -12 +gm_ov.size()/2; i < gm_ov.size(); x++, i++)
+	std::string gm_ov = "YOU WIN";
+	for (size_t i = 0, x = int(ScreenX / 2) -12 +gm_ov.size()/2; i < gm_ov.size(); x++, i++)
 	{
 		SetChar(x, int(ScreenY / 2), gm_ov.at(i));
 	}
 	std::string congr_str = "CONGRATULATIONS";
-	for (int i = 0, x = int(ScreenX / 2) - 12; i < congr_str.size(); x++, i++)
+	for (size_t i = 0, x = int(ScreenX / 2) - 12; i < congr_str.size(); x++, i++)
 	{
 		SetChar(x, int(ScreenY / 2)-1, congr_str.at(i));
 	}

@@ -18,6 +18,7 @@ public:
 	virtual void Update();
 	void Collision();
 
+	void drawMenu();
 	void drawSnake();
 	void drawTable();
 	void drawApple();
@@ -29,10 +30,10 @@ public:
 
 	std::unique_ptr<Snake> ptrSnake;
 
-	bool MENU = 0;
-	bool GAME_OVER = 0;
-	bool WON = 0;
+	int MENU = 0;
+	bool GAME_OVER = FALSE;
+	bool WON = FALSE;
 	int SCORE = 0;
 	int WIN_CONDITION;
-	bool APPLE_PLACED;
+	bool APPLE_PLACED = FALSE;
 };

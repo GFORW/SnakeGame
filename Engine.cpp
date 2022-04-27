@@ -1,9 +1,6 @@
 #pragma once
 #include "Engine.h"
-#include <thread>
-#include <chrono>
 #include <conio.h>
-#include <time.h>
 
 Engine::Engine(int X, int Y) : ScreenX(X), ScreenY(Y)
 {
@@ -92,16 +89,15 @@ Engine::~Engine()
 
 }
 
+// Draw Screen
 void Engine::Render()
 {
-	WORD attr{};
 	DWORD Chars;
-	
-	// Draw Screen
-	for (int i = 0; i < ScreenX; i++)
-		for (int j = 0; j < ScreenY; j++)
+	COORD pos;
+	for (short i = 0; i < ScreenX; i++)
+		for (short j = 0; j < ScreenY; j++)
 		{
-			COORD pos = { i,j };
+			pos = { i,j };
 			FillConsoleOutputCharacter(hConsole, Screen.at(i).at(j), 1, pos, &Chars);
 		}
 }
