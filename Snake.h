@@ -23,5 +23,4 @@ public:
 
 	std::unique_ptr<std::vector<COORD>> ptrBody;
 	std::unique_ptr<std::vector<COORD>> ptrOldBody;
-
 };

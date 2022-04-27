@@ -222,7 +222,6 @@ void Game::drawSnake()
 	{
 		SetChar(piece.X, piece.Y, snake);
 	}
-
 }
 
 void Game::drawMenu()

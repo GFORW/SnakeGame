@@ -30,16 +30,17 @@ public:
 	int GameSpeed;
 	int play;
 	int FPS;
+
 private:
 	void Render();
 
+	std::vector<std::vector<wchar_t>> Screen;
 
 	HANDLE hConsole;
 	HANDLE hConsoleIn;
 
-	std::vector<std::vector<wchar_t>> Screen;
-
 	COORD windowBufSize;
 	COORD DwBufferCoord;
+
 	SMALL_RECT WindowSize;
 };

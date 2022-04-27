@@ -6,27 +6,6 @@ Engine::Engine(int X, int Y) : ScreenX(X), ScreenY(Y)
 {
 	hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
 	hConsoleIn = GetStdHandle(STD_INPUT_HANDLE);
-	// if x,y > max size;
-	_CONSOLE_SCREEN_BUFFER_INFO info;
-	GetConsoleScreenBufferInfo(hConsole, &info);
-	SMALL_RECT windowMaxSize = { 0, 0, info.dwMaximumWindowSize.X - 1, info.dwMaximumWindowSize.Y - 1 };
-	if (X > info.dwMaximumWindowSize.X - 1)
-	{
-		X = info.dwMaximumWindowSize.X;
-		ScreenX = X;
-	}
-	if (Y > info.dwMaximumWindowSize.Y - 1)
-	{
-		Y = info.dwMaximumWindowSize.Y;
-		ScreenY = Y;
-	}
-
-	WindowSize = { 0, 0, (SHORT)(ScreenX - 1), (SHORT)(ScreenY - 1) };
-	windowBufSize = { (SHORT)ScreenX   , (SHORT)ScreenY };
-
-	//prevent window resizing
-	SetWindowLong(GetConsoleWindow(), GWL_STYLE, GetWindowLong(GetConsoleWindow(), GWL_STYLE) & ~WS_MAXIMIZEBOX & ~WS_SIZEBOX);
-
 	// disable text selection
 	{
 		DWORD mode;
@@ -62,18 +41,26 @@ Engine::Engine(int X, int Y) : ScreenX(X), ScreenY(Y)
 	}
 
 
-	// set window params
-	if (!SetConsoleWindowInfo(hConsole, TRUE, &WindowSize))
-	{
-		std::cout << "SetConsoleWindowInfo failed with error " << GetLastError() << std::endl;
-		std::cin.ignore();
-	}
+	WindowSize = { 0, 0, 1, 1 };    // BECAUSE WINDOWS IS STUPID
+	SetConsoleWindowInfo(hConsole, TRUE, &WindowSize);
+
+	windowBufSize = {(short)(ScreenX),(short)(ScreenY)};
 	if (!SetConsoleScreenBufferSize(hConsole, windowBufSize))
 	{
 		std::cout << "SetConsoleScreenBufferSize failed with error " << GetLastError() << std::endl;
 		std::cin.ignore();
 	}
 
+	WindowSize = { 0, 0, (short)(ScreenX - 1), (short)(ScreenY- 1)};
+	if (!SetConsoleWindowInfo(hConsole, TRUE, &WindowSize))
+	{
+		std::cout << "SetConsoleWindowInfo failed with error " << GetLastError() << std::endl;
+		std::cin.ignore();
+	}
+
+	//prevent window resizing
+	HWND cWin = GetConsoleWindow();
+	SetWindowLong(cWin, GWL_STYLE, GetWindowLong(cWin, GWL_STYLE) & ~WS_MAXIMIZEBOX & ~WS_SIZEBOX);
 
 	// fill up array
 	{
@@ -116,6 +103,12 @@ wchar_t Engine::GetChar(unsigned int x, unsigned int y)
 void Engine::Run()
 {
 	std::chrono::high_resolution_clock timer;
+	if (!SetConsoleScreenBufferSize(hConsole, windowBufSize))
+	{
+		std::cout << "SetConsoleScreenBufferSize failed with error " << GetLastError() << std::endl;
+		//std::cin.ignore();
+	}
+
 	while(play)
 	{
 		auto start = timer.now();
@@ -134,7 +127,6 @@ void Engine::Run()
 			FPS = ( 1.00f / delta)* 1000.0f;
 		Sleep(GameSpeed);
 	}
-	std::cin.get();
 }
 
 void Engine::ChangeSpeed(int sec)
