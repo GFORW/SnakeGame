@@ -119,7 +119,7 @@ wchar_t Engine::GetChar(int x, int y)
 void Engine::Run()
 {
 
-	while (1)
+	while (play)
 	{
 		if (_kbhit())
 		{
@@ -127,14 +127,7 @@ void Engine::Run()
 			if (!FlushConsoleInputBuffer(hConsoleIn))
 				std::cout << "FlushConsoleInputBuffer failed with error " << GetLastError();
 		}
-
 		Update();
-		if (GAME_OVER)
-		{
-			GameOver();
-			Render();
-			break;
-		}	
 		Render();
 
 		Sleep(GameSpeed);

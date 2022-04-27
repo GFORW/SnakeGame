@@ -9,8 +9,9 @@ Game::Game() : Engine() //
 	ptrSnake = std::move(std::make_unique<Snake>());
 	ptrSnake->dir = Direction::down;
 	APPLE_PLACED = FALSE;
-	SCORE = 0;
 	GameSpeed = 150;
+	WIN_CONDITION = 100;
+	play = TRUE;
 	drawTable();
 }
 
@@ -41,8 +42,20 @@ void Game::KeyPressed(int btnCode)
 
 void Game::Update()
 {
+
 	drawApple();
 	drawSnake();
+	if (GAME_OVER)
+	{
+		GameOver();
+		return;
+	}
+	if (WON)
+	{
+		Win();
+		return;
+	}
+
 	drawScore();
 }
 
@@ -91,21 +104,9 @@ void Game::drawApple()
 void Game::drawScore()
 {
 	std::wstring scr = std::to_wstring(SCORE);
-
-	if (GAME_OVER)
+	for (int i = 0, x = ScreenX - 7; i < scr.size(); x++, i++)
 	{
-		int y = int(ScreenY / 2) + 2;
-		int x = int(ScreenX / 2) - 10 + 5;
-		for (int i = 0; i < scr.size(); i++)
-			SetChar(x, y, scr[i]);
-	}
-	else
-	{
-		for (int i = 0, x = ScreenX - 7; i < scr.size(); x++, i++)
-		{
-			SetChar(x, 6, scr[i]);  // possible overlfow with big nunmbers
-		}
-
+		SetChar(x, 6, scr[i]); 
 	}
 }
 
@@ -152,13 +153,11 @@ void Game::Collision()
 	else if (GetChar(head.X, head.Y) == snake) //self-eating
 	{
 		GAME_OVER = TRUE;
-		return;
 	}
 
 	if (GetChar(head.X, head.Y) == bounds)
 	{
 		GAME_OVER = TRUE;
-		return;
 	}
 
 	if (GetChar(head.X, head.Y) == apple)
@@ -167,14 +166,19 @@ void Game::Collision()
 		APPLE_PLACED = FALSE;
 		SCORE++;
 		ChangeSpeed(10);
+		if (SCORE == WIN_CONDITION)
+			WON = TRUE;
 	}
 	ptrSnake->ptrBody->at(0) = head; //  step
 }
 
 void Game::drawSnake()
 {
+
 	Collision();
 	move();
+	if (GAME_OVER)
+		return;
 	for (auto piece : *ptrSnake->ptrOldBody.get())  	// delete old snake
 	{
 		SetChar(piece.X, piece.Y, L' ');
@@ -184,25 +188,31 @@ void Game::drawSnake()
 	{
 		SetChar(piece.X, piece.Y, snake);
 	}
+
 }
 
 void Game::GameOver()
 {
-	for (int i = 0; i < ScreenX; i++)
-		for (int j = 0; j < ScreenY; j++)
-			SetChar(i,j,L' ');
-
+	play = FALSE;
 	std::string gm_ov = "GAME OVER";
 	for (int i = 0, x = int(ScreenX/2)- gm_ov.size(); i < gm_ov.size(); x++, i++)
 	{
 		SetChar(x, int(ScreenY/2), gm_ov.at(i));
 	}
-
-	std::string score = "SCORE";
-	for (int i = 0, x = int(ScreenX / 2) - gm_ov.size()+2; i < score.size(); x++, i++)
-	{
-		SetChar(x, int(ScreenY / 2)+1, score.at(i));
-	}
-	drawScore();
 };
 
+void Game::Win()
+{
+	play = FALSE;
+	std::string gm_ov = "GAME WON";
+	for (int i = 0, x = int(ScreenX / 2) -12 +gm_ov.size()/2; i < gm_ov.size(); x++, i++)
+	{
+		SetChar(x, int(ScreenY / 2), gm_ov.at(i));
+	}
+	std::string congr_str = "CONGRATULATIONS";
+	for (int i = 0, x = int(ScreenX / 2) - 12; i < congr_str.size(); x++, i++)
+	{
+		SetChar(x, int(ScreenY / 2)-1, congr_str.at(i));
+	}
+
+}

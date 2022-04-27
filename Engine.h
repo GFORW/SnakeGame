@@ -20,16 +20,13 @@ public:
 	void Run();
 	wchar_t GetChar(int x, int y);
 	void ChangeSpeed(int sec);
-	virtual void GameOver() {};
 
 
 	int ScreenX;
 	int ScreenY;
 
-	bool MENU = 0;
-	bool GAME_OVER = 0;
 	int GameSpeed;
-
+	int play;
 private:
 	void Render();
 

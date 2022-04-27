@@ -16,8 +16,6 @@ public:
 
 	virtual void KeyPressed(int btnCode);
 	virtual void Update();
-	virtual void GameOver();
-
 	void Collision();
 
 	void drawSnake();
@@ -26,8 +24,15 @@ public:
 	void drawScore();
 	void move();
 
+	void GameOver();
+	void Win();
+
 	std::unique_ptr<Snake> ptrSnake;
-	
-	int SCORE;
+
+	bool MENU = 0;
+	bool GAME_OVER = 0;
+	bool WON = 0;
+	int SCORE = 0;
+	int WIN_CONDITION;
 	bool APPLE_PLACED;
 };
