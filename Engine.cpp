@@ -129,7 +129,7 @@ void Engine::Run()
 		Render();
 
 		auto end = timer.now();
-		auto delta = std::chrono::duration_cast<std::chrono::milliseconds> (end - start).count();
+		auto delta = std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count();
 		if (delta > 0)
 			FPS = ( 1.00f / delta)* 1000.0f;
 		Sleep(GameSpeed);

@@ -2,12 +2,24 @@
 #include <random>
 #include <time.h>
 
+
+#define MiddleX (unsigned int)((ScreenX-1)/2)
+#define MiddleY (unsigned int)((ScreenY-1)/2)
+
+#define ScorePanelEndX  (ScreenX-1)
+#define ScorePanelStartX  (ScreenX - 11)
+#define ScorePanelMiddleX (ScorePanelStartX + (ScorePanelEndX-ScorePanelStartX)/2)
+#define ScorePanelMiddleY (unsigned int)((ScreenY-1)/2)
+
+#define MiddleBoardX (1 + (unsigned int)(ScorePanelStartX/2))
+#define MiddleBoardY (1 + (unsigned int)((ScreenY-2)/2))
+
+
 Game::Game() : Engine() // 
 {
 	ptrSnake = std::move(std::make_unique<Snake>());
 	ptrSnake->dir = Direction::down;
 	GameSpeed = 150;
-	WIN_CONDITION = 100;
 	play = TRUE;
 	drawMenu();
 }
@@ -53,7 +65,6 @@ void Game::Update()
 			for (int j = 0; j < ScreenY; j++)
 				SetChar(i, j, L' ');
 	}
-
 	drawTable();
 	drawApple();
 	drawSnake();
@@ -69,7 +80,6 @@ void Game::Update()
 		drawScore();
 		return;
 	}
-
 }
 
 void Game::drawTable()
@@ -82,14 +92,14 @@ void Game::drawTable()
 		{
 			if ((y == 0) || (x == 0) || x == ScreenX-1 || y == ScreenY-1)
 				SetChar(x, y, bounds);
-			if ((ScreenX - x) == 11)  // make score part dynamicly adjustable
+			if (x == ScorePanelStartX)  // make score part dynamicly adjustable
 				SetChar(x, y, bounds);
 		}
 	}
 	std::string score = "SCORE";
-	for (size_t i=0, x = ScreenX - 8; i < score.size();x++,i++)
+	for (size_t i=0, x = ScorePanelMiddleX -score.size()/2; i < score.size();x++,i++)
 	{
-			SetChar(x, 5, score.at(i));
+			SetChar(x, ScorePanelMiddleY, score.at(i));
 	}
 	drawScore();
 }
@@ -98,18 +108,22 @@ void Game::drawApple()
 {
 	if (!APPLE_PLACED)
 	{
-		srand((unsigned int)time(nullptr));
-		short apple_x = 1 + (rand() % (ScreenX - 13)); 	// get random accessable place
-		srand((unsigned int)time(nullptr));
+		auto seed = std::chrono::system_clock::now();
+		srand(std::chrono::system_clock::to_time_t(seed));
+		short apple_x = 1 + (rand() % ScorePanelStartX); 	// get random accessable place
+		seed = std::chrono::system_clock::now();
+		std::chrono::system_clock::to_time_t(seed);
 		short apple_y = 1 + (rand() % (ScreenY - 2));
 
 		COORD check{ apple_x,apple_y };
 		while (GetChar(apple_x, apple_y) == snake)
 		{
-			srand((unsigned int)time(NULL));
-			int apple_x = 1 + rand() % ScreenX - 12;
-			srand((unsigned int)time(NULL));
-			int apple_y = 1 + rand() % ScreenY - 1;
+			seed = std::chrono::system_clock::now();
+			srand(std::chrono::system_clock::to_time_t(seed));
+			int apple_x = 1 + rand() % ScorePanelStartX;
+			seed = std::chrono::system_clock::now();
+			srand(std::chrono::system_clock::to_time_t(seed));
+			int apple_y = 1 + rand() % (ScreenY - 2);
 		}
 		SetChar(apple_x, apple_y, apple);
 		APPLE_PLACED = TRUE;
@@ -119,12 +133,11 @@ void Game::drawApple()
 void Game::drawScore()
 {
 	std::wstring scr = std::to_wstring(SCORE);
-	for (size_t i = 0, x = ScreenX - 7; i < scr.size(); x++, i++)
+	for (unsigned int i = 0, x = ScorePanelMiddleX; i < scr.size(); x++, i++)
 	{
-		SetChar(x, 6, scr[i]); 
+		SetChar(x, ScorePanelMiddleY+1, scr[i]);
 	}
 }
-
 
 void Game::move()  
 {
@@ -215,25 +228,31 @@ void Game::drawSnake()
 void Game::drawMenu()
 {
 	std::string text = "SNAKE GAME";
-	std::string text1 = "TO WIN - EAT " + std::to_string(WIN_CONDITION) + " APPLES";
-	std::string text2 = "DO NOT EAT BORDERS OR YOUR TAIL";
-	std::string text3 = "PRESS ANY BUTTON TO START";
+	std::string text1 = " - TO WIN - EAT " + std::to_string(WIN_CONDITION) + " APPLES";
+	std::string text2 = " - DO NOT EAT BORDERS OR YOUR TAIL";
+	std::string text3 = " - EACH APPLE INCREASES YOUR SPEED";
+	std::string text4 = "PRESS ANY BUTTON TO START";
 
-	for (size_t i = 0, x = int(ScreenX / 2) - text.size(); i < text.size(); x++, i++)
+	for (size_t i = 0, x = MiddleX - text.size() /2; i < text.size(); x++, i++)
 	{
-		SetChar(x, int(ScreenY / 2), text.at(i));
+		SetChar(x, MiddleY -5, text.at(i));
 	}
-	for (size_t i = 0, x = int(ScreenX / 2) - text1.size() / 2; i < text1.size(); x++, i++)
+	for (size_t i = 0, x = MiddleX + text.size() - text1.size() ; i < text1.size(); x++, i++)
 	{
-		SetChar(x, int(ScreenY / 2) + 1, text1.at(i));
+		SetChar(x, MiddleY , text1.at(i));
 	}
-	for (size_t i = 0, x = int(ScreenX / 2) - text2.size() / 2; i < text2.size(); x++, i++)
+	for (size_t i = 0, x = MiddleX + text.size()  - text1.size(); i < text2.size(); x++, i++)
 	{
-		SetChar(x, int(ScreenY / 2) + 2, text2.at(i));
+		SetChar(x, MiddleY + 1, text2.at(i));
 	}
-	for (size_t i = 0, x = int(ScreenX / 2) - text3.size() / 2; i < text3.size(); x++, i++)
+	for (size_t i = 0, x = MiddleX + text.size() - text1.size(); i < text3.size(); x++, i++)
 	{
-		SetChar(x, int(ScreenY - 2), text3.at(i));
+		SetChar(x, MiddleY + 2, text3.at(i));
+	}
+
+	for (size_t i = 0, x = MiddleX - text4.size() / 2; i < text4.size(); x++, i++)
+	{
+		SetChar(x, ScreenY -2, text4.at(i));
 	}
 
 	MENU++;
@@ -243,24 +262,25 @@ void Game::GameOver()
 {
 	play = FALSE;
 	std::string gm_ov = "GAME OVER";
-	for (size_t i = 0, x = int(ScreenX/2)- gm_ov.size(); i < gm_ov.size(); x++, i++)
+	for (unsigned int i = 0, x = MiddleBoardX - gm_ov.size()/2; i < gm_ov.size(); x++, i++)
 	{
-		SetChar(x, int(ScreenY/2), gm_ov.at(i));
+		SetChar(x, MiddleBoardY, gm_ov.at(i));
 	}
 };
 
 void Game::Win()
 {
 	play = FALSE;
-	std::string gm_ov = "YOU WIN";
-	for (size_t i = 0, x = int(ScreenX / 2) -12 +gm_ov.size()/2; i < gm_ov.size(); x++, i++)
-	{
-		SetChar(x, int(ScreenY / 2), gm_ov.at(i));
-	}
 	std::string congr_str = "CONGRATULATIONS";
-	for (size_t i = 0, x = int(ScreenX / 2) - 12; i < congr_str.size(); x++, i++)
+	for (size_t i = 0, x = MiddleBoardX - congr_str.size()/2; i < congr_str.size(); x++, i++)
 	{
-		SetChar(x, int(ScreenY / 2)-1, congr_str.at(i));
+		SetChar(x, MiddleBoardY , congr_str.at(i));
+	}
+
+	std::string win_str = "YOU WIN";
+	for (size_t i = 0, x = MiddleBoardX - congr_str.size()/4; i < win_str.size(); x++, i++)
+	{
+		SetChar(x, MiddleBoardY +1, win_str.at(i));
 	}
 
 }

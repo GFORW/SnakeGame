@@ -16,4 +16,10 @@
     <None Include=".gitignore" />
     <None Include="README.MD" />
   </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="SnakeGame.rc" />
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="SnakeGame.ico" />
+  </ItemGroup>
 </Project>

@@ -23,7 +23,9 @@ public:
 	void drawTable();
 	void drawApple();
 	void drawScore();
+	
 	void drawFPS();
+	
 	void move();
 
 	void GameOver();
@@ -31,10 +33,12 @@ public:
 
 	std::unique_ptr<Snake> ptrSnake;
 
+private:
+
 	int MENU = 0;
 	bool GAME_OVER = FALSE;
 	bool WON = FALSE;
 	int SCORE = 0;
-	int WIN_CONDITION;
+	int WIN_CONDITION = 30;
 	bool APPLE_PLACED = FALSE;
 };
