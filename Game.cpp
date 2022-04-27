@@ -7,7 +7,7 @@
 #define MiddleY (unsigned int)((ScreenY-1)/2)
 
 #define ScorePanelEndX  (ScreenX-1)
-#define ScorePanelStartX  (ScreenX - 11)
+#define ScorePanelStartX  (ScorePanelEndX - 11)
 #define ScorePanelMiddleX (ScorePanelStartX + (ScorePanelEndX-ScorePanelStartX)/2)
 #define ScorePanelMiddleY (unsigned int)((ScreenY-1)/2)
 
@@ -92,7 +92,7 @@ void Game::drawTable()
 		{
 			if ((y == 0) || (x == 0) || x == ScreenX-1 || y == ScreenY-1)
 				SetChar(x, y, bounds);
-			if (x == ScorePanelStartX)  // make score part dynamicly adjustable
+			if (x == ScorePanelStartX)  
 				SetChar(x, y, bounds);
 		}
 	}
@@ -282,5 +282,4 @@ void Game::Win()
 	{
 		SetChar(x, MiddleBoardY +1, win_str.at(i));
 	}
-
 }
