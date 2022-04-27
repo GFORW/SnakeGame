@@ -103,12 +103,6 @@ wchar_t Engine::GetChar(unsigned int x, unsigned int y)
 void Engine::Run()
 {
 	std::chrono::high_resolution_clock timer;
-	if (!SetConsoleScreenBufferSize(hConsole, windowBufSize))
-	{
-		std::cout << "SetConsoleScreenBufferSize failed with error " << GetLastError() << std::endl;
-		//std::cin.ignore();
-	}
-
 	while(play)
 	{
 		auto start = timer.now();
@@ -127,6 +121,7 @@ void Engine::Run()
 			FPS = ( 1.00f / delta)* 1000.0f;
 		Sleep(GameSpeed);
 	}
+	std::cin.ignore();
 }
 
 void Engine::ChangeSpeed(int sec)
