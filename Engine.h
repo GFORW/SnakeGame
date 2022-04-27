@@ -18,9 +18,9 @@ public:
 	virtual void Update() {};
 
 
-	void SetChar(int x, int y, wchar_t c) ;
+	void SetChar(unsigned int x, unsigned int y, wchar_t c) ;
 	void Run();
-	wchar_t GetChar(int x, int y);
+	wchar_t GetChar(unsigned int x, unsigned int y);
 	void ChangeSpeed(int sec);
 
 
@@ -29,6 +29,7 @@ public:
 
 	int GameSpeed;
 	int play;
+	int FPS;
 private:
 	void Render();
 
@@ -42,6 +43,3 @@ private:
 	COORD DwBufferCoord;
 	SMALL_RECT WindowSize;
 };
-
-
-

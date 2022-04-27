@@ -25,5 +25,3 @@ public:
 	std::unique_ptr<std::vector<COORD>> ptrOldBody;
 
 };
-
-

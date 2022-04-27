@@ -23,6 +23,7 @@ public:
 	void drawTable();
 	void drawApple();
 	void drawScore();
+	void drawFPS();
 	void move();
 
 	void GameOver();

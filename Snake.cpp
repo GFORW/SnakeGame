@@ -18,4 +18,3 @@ void Snake::addPiece()
 	ptrBody->reserve(ptrBody->size() + ptrBody->size()); // preallocate memory
 	ptrBody->insert(ptrBody->end(), ptrOldBody->begin(), ptrOldBody->end());
 }
-

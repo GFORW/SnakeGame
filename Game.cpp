@@ -4,7 +4,6 @@
 
 Game::Game() : Engine() // 
 {
-	SetConsoleTitleA("SnakeGame");
 	ptrSnake = std::move(std::make_unique<Snake>());
 	ptrSnake->dir = Direction::down;
 	GameSpeed = 150;
@@ -40,6 +39,7 @@ void Game::KeyPressed(int btnCode)
 
 void Game::Update()
 {
+	drawFPS();
 	if (MENU == 1)
 	{
 		MENU++;
@@ -70,7 +70,6 @@ void Game::Update()
 		return;
 	}
 
-	drawScore();
 }
 
 void Game::drawTable()
@@ -92,6 +91,7 @@ void Game::drawTable()
 	{
 			SetChar(x, 5, score.at(i));
 	}
+	drawScore();
 }
 
 void Game::drawApple()
@@ -135,7 +135,12 @@ void Game::move()
 	}
 }
 
-
+void Game::drawFPS()
+{
+	std::string title = "SnakeGame      FPS : ";
+	title += std::to_string(FPS);
+	SetConsoleTitleA(title.c_str());
+}
 
 void Game::Collision()
 {
@@ -180,6 +185,7 @@ void Game::Collision()
 		ptrSnake->addPiece();
 		APPLE_PLACED = FALSE;
 		SCORE++;
+		drawScore();
 		ChangeSpeed(10);
 		if (SCORE == WIN_CONDITION)
 			WON = TRUE;
@@ -241,7 +247,6 @@ void Game::GameOver()
 	{
 		SetChar(x, int(ScreenY/2), gm_ov.at(i));
 	}
-	drawScore();
 };
 
 void Game::Win()

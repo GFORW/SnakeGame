@@ -42,6 +42,7 @@ Engine::Engine(int X, int Y) : ScreenX(X), ScreenY(Y)
 		CONSOLE_FONT_INFOEX ConsoleFontInfo;
 		GetCurrentConsoleFontEx(hConsole, FALSE , &ConsoleFontInfo); 
 		ConsoleFontInfo.cbSize = sizeof(CONSOLE_FONT_INFOEX);
+		ConsoleFontInfo.FontWeight = 400;
 		ConsoleFontInfo.FontFamily = 72;
 		wcscpy_s(ConsoleFontInfo.FaceName, L"Terminal");
 		ConsoleFontInfo.dwFontSize = COORD{ 8,12 };
@@ -102,21 +103,22 @@ void Engine::Render()
 		}
 }
 
-void Engine::SetChar(int x, int y, wchar_t c)  
+void Engine::SetChar(unsigned int x, unsigned int y, wchar_t c)
 {
 	Screen.at(x).at(y) = c;
 }
 
-wchar_t Engine::GetChar(int x, int y)
+wchar_t Engine::GetChar(unsigned int x, unsigned int y)
 {
 	return Screen.at(x).at(y);
 }
 
 void Engine::Run()
 {
-
-	while (play)
+	std::chrono::high_resolution_clock timer;
+	while(play)
 	{
+		auto start = timer.now();
 		if (_kbhit())
 		{
 			KeyPressed(_getch());
@@ -126,6 +128,10 @@ void Engine::Run()
 		Update();
 		Render();
 
+		auto end = timer.now();
+		auto delta = std::chrono::duration_cast<std::chrono::milliseconds> (end - start).count();
+		if (delta > 0)
+			FPS = ( 1.00f / delta)* 1000.0f;
 		Sleep(GameSpeed);
 	}
 	std::cin.get();
