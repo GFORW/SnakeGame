@@ -1,5 +1,5 @@
 #pragma once
-#include "Engine.h"
+#include "../CnsFramework/CnsFramework.h"
 #include "Snake.h"
 
 #define bounds L'#'
@@ -8,12 +8,11 @@
 
 
 
-class Game : public Engine
+class Game : public CnsFramework
 {
 public:
 	Game();
 	~Game();
-
 	virtual void KeyPressed(int btnCode);
 	virtual void Update();
 	void Collision();
@@ -34,7 +33,7 @@ public:
 	std::unique_ptr<Snake> ptrSnake;
 
 private:
-
+	int GameSpeed = 150;
 	int MENU = 0;
 	bool GAME_OVER = FALSE;
 	bool WON = FALSE;

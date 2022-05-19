@@ -15,12 +15,10 @@
 #define MiddleBoardY (1 + (unsigned int)((ScreenY-2)/2))
 
 
-Game::Game() : Engine() // 
+Game::Game() : CnsFramework(50,25,150) // 
 {
 	ptrSnake = std::move(std::make_unique<Snake>());
 	ptrSnake->dir = Direction::down;
-	GameSpeed = 150;
-	play = TRUE;
 	drawMenu();
 }
 
@@ -199,7 +197,7 @@ void Game::Collision()
 		APPLE_PLACED = FALSE;
 		SCORE++;
 		drawScore();
-		ChangeSpeed(10);
+		ChangeTickSpeed(GameSpeed += 10);
 		if (SCORE == WIN_CONDITION)
 			WON = TRUE;
 	}
