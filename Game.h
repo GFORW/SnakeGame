@@ -1,5 +1,5 @@
 #pragma once
-#include "../CnsFramework/CnsFramework.h"
+#include "CnsFramework/CnsFramework.h"
 #include "Snake.h"
 
 #define bounds L'#'
