@@ -1,12 +1,10 @@
 #pragma once
-#include "CnsFramework/CnsFramework.h"
+#include <CnsFramework.h>
 #include "Snake.h"
 
 #define bounds L'#'
 #define snake L'x'
 #define apple L'a'
-
-
 
 class Game : public CnsFramework
 {
