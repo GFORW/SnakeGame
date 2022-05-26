@@ -12,10 +12,12 @@ class Game : public CnsFramework
 public:
 	Game();
 	~Game();
+
 	void KeyPressed(int btnCode);
 	void Update(GameState * State);
 	void Collision();
 	bool Handle_Events();
+
 	void drawMenu();
 	void drawSnake();
 	void drawTable();
@@ -29,6 +31,7 @@ public:
 	void Win();
 
 	std::unique_ptr<Snake> ptrSnake;
+
 	GameState game;
 	GameState menu;
 	GameState game_over;
