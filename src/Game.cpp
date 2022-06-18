@@ -1,32 +1,26 @@
 #include "game.h"
-#include <random>
-#include <time.h>
 
 
-#define MiddleX (unsigned int)((ScreenX-1)/2)
-#define MiddleY (unsigned int)((ScreenY-1)/2)
+#define MiddleX ((ScreenX-1)/2)
+#define MiddleY ((ScreenY-1)/2)
 
 #define ScorePanelEndX  (ScreenX-1)
 #define ScorePanelStartX  (ScorePanelEndX - 11)
 #define ScorePanelMiddleX (ScorePanelStartX + (ScorePanelEndX-ScorePanelStartX)/2)
-#define ScorePanelMiddleY (unsigned int)((ScreenY-1)/2)
+#define ScorePanelMiddleY ((ScreenY-1)/2)
 
-#define MiddleBoardX (1 + (unsigned int)(ScorePanelStartX/2))
-#define MiddleBoardY (1 + (unsigned int)((ScreenY-2)/2))
+#define MiddleBoardX (1 + (ScorePanelStartX/2))
+#define MiddleBoardY (1 + ((ScreenY-2)/2))
 
 
 Game::Game() : CnsFramework(50,25,150ms) // 
 {
-	game = GameState(ScreenX, ScreenY);
-	game.name = "game";
-	menu = GameState(ScreenX, ScreenY);
-	menu.name = "menu";
-	game_over = GameState(ScreenX, ScreenY);
-	game_over.name = "game_over";
-	win = GameState(ScreenX, ScreenY);
-	win.name = "win";
+	game = new GameState(ScreenX, ScreenY, "game");
+	menu = new GameState(ScreenX, ScreenY, "menu");
+	game_over = new GameState(ScreenX, ScreenY, "game_over");
+	win = new GameState(ScreenX, ScreenY, "win");
 
-	current_state = &menu;
+	current_state = menu;
 
 	ptrSnake = std::move(std::make_unique<Snake>());
 	ptrSnake->dir = Direction::down;
@@ -34,14 +28,19 @@ Game::Game() : CnsFramework(50,25,150ms) //
 	drawMenu();
 	drawTable();
 	drawApple();
-	drawScore(&game);
+	drawScore(game);
+
 }
 
 Game::~Game()
 {
+	delete game;
+	delete menu;
+	delete game_over;
+	delete win;
 }
 
-void Game::KeyPressed(int btnCode)
+void Game::KeyPressed(const int btnCode) const
 {
 	ptrSnake->prev_dir = ptrSnake->dir;
 	if ((btnCode == int('W')) || (btnCode == int('w'))) //w
@@ -66,9 +65,9 @@ bool Game::Handle_Events()
 {
 	if (current_state->name == "game_over")
 	{
-		if (GAME_OVER)
+		if (env & GAME_OVER)
 		{
-			GAME_OVER = false;
+			env &= ~GAME_OVER;
 			return true; // do another loop for render
 		}
 		std::cin.ignore();
@@ -76,9 +75,9 @@ bool Game::Handle_Events()
 	}
 	if (current_state->name == "win")
 	{
-		if (WIN)
+		if (env & WIN)
 		{
-			WIN = false;
+			env &= ~WIN;
 			return true; // do another loop for render
 		}
 		std::cin.ignore();
@@ -87,81 +86,81 @@ bool Game::Handle_Events()
 
 	return true;
 }
-void Game::Update(GameState * State)
+void Game::Update()
 {
+	const std::string state_name = current_state->name;
 	drawFPS();
-	if (State->name == "menu")
+	if (state_name == "menu")
 	{
-		if (MENU == 1)
-		{
-			MENU++;
-		}
-		else if (MENU == 2)
+		if (env & MENU)
 		{
 			std::cin.ignore();
-			MENU++;
-			current_state = &game;
+			current_state = game;
 		}
+		else env |= MENU;
+		return;
 	}
-	if (State->name == "game")
+	if (state_name == "game")
 	{
 		drawTable();
 		drawApple();
 		drawSnake();
+		return;
 	}
-	if (State->name == "game_over")
+	if (state_name == "game_over")
 	{
 		GameOver();
-		drawScore(&game_over);
+		drawScore(game_over);
+		return;
 	}
-	if (State->name == "win")
+	if (state_name == "win")
 	{
 		Win();
-		drawScore(&game);
+		drawScore(game);
+		return;
 	}
 }
 
 void Game::drawTable()
 {
-
 	// fill bounds
 	for (int y = 0; y < ScreenY; y++)
 	{
 		for (int x = 0; x < ScreenX; x++)
 		{
 			if ((y == 0) || (x == 0) || x == ScreenX-1 || y == ScreenY-1)
-				game.SetChar(x, y, bounds);
+				game->SetChar(x, y, bounds);
 			if (x == ScorePanelStartX)  
-				game.SetChar(x, y, bounds);
+				game->SetChar(x, y, bounds);
 		}
 	}
 	std::string score = "SCORE";
 	for (size_t i = 0, x = ScorePanelMiddleX - score.size() / 2; i < score.size(); x++, i++)
 	{
-		game.SetChar(x, ScorePanelMiddleY, score.at(i));
+		game->SetChar(x, ScorePanelMiddleY, score.at(i));
 	}
-	drawScore(&game);
+	drawScore(game);
 }
 
 void Game::drawApple()
 {
-	if (!APPLE_PLACED)
+	if (!(env & APPLE_PLACED))
 	{
 		auto seed = std::chrono::system_clock::now();
 		srand(std::chrono::system_clock::to_time_t(seed));
 
 		short apple_y = 0, apple_x = 0;
-		while (game.GetChar(apple_x, apple_y) != L' ')
+		while (game->GetChar(apple_x, apple_y) != L' ')
 		{
 			apple_x = 1 + rand() % ScorePanelStartX;
 			apple_y = 1 + rand() % (ScreenY - 2);
 		}
-		game.SetChar(apple_x, apple_y, apple);
-		APPLE_PLACED = TRUE;
+		game->SetChar(apple_x, apple_y, apple);
+		env |= APPLE_PLACED;
 	}
 }
 
-void Game::drawScore(GameState * state)
+void Game::drawScore(GameState * const state)
 {
 	std::wstring scr = std::to_wstring(SCORE);
 	for (unsigned int i = 0, x = ScorePanelMiddleX; i < scr.size(); x++, i++)
@@ -214,29 +213,29 @@ void Game::Collision()
 		Collision();
 		return;
 	}
-	else if (game.GetChar(head.X, head.Y) == snake) //self-eating
+	else if (game->GetChar(head.X, head.Y) == snake) //self-eating
 	{
-		current_state = &game_over;
-		GAME_OVER = TRUE;
+		current_state = game_over;
+		env |= GAME_OVER;
 	}
 
-	if (game.GetChar(head.X, head.Y) == bounds)
+	if (game->GetChar(head.X, head.Y) == bounds)
 	{
-		current_state = &game_over;
-		GAME_OVER = TRUE;
+		current_state = game_over;
+		env |= GAME_OVER;
 	}
 
-	if (game.GetChar(head.X, head.Y) == apple) // redo logic for score updare
+	if (game->GetChar(head.X, head.Y) == apple) // redo logic for score updare
 	{
 		ptrSnake->addPiece();
-		APPLE_PLACED = FALSE;
+		env &= ~APPLE_PLACED;
 		SCORE++;
-		drawScore(&game);
+		drawScore(game);
 		ChangeTickSpeed(tick -= 10ms);
 		if (SCORE == WIN_CONDITION)
 		{
-			WIN = TRUE;
-			current_state = &win;
+			env |= WIN;
+			current_state = win;
 		}
 	}
 	ptrSnake->ptrBody->at(0) = head; //  step
@@ -247,16 +246,16 @@ void Game::drawSnake()
 
 	Collision();
 	move();
-	if (GAME_OVER)
+	if ((env & GAME_OVER))
 		return;
 	for (auto piece : *ptrSnake->ptrOldBody.get())  	// delete old snake
 	{
-		game.SetChar(piece.X, piece.Y, L' ');
+		game->SetChar(piece.X, piece.Y, L' ');
 	}
 
 	for (auto piece : *ptrSnake->ptrBody.get())  // draw new snake
 	{
-		game.SetChar(piece.X, piece.Y, snake);
+		game->SetChar(piece.X, piece.Y, snake);
 	}
 }
 
@@ -270,48 +269,47 @@ void Game::drawMenu()
 
 	for (size_t i = 0, x = MiddleX - text.size() /2; i < text.size(); x++, i++)
 	{
-		menu.SetChar(x, MiddleY -5, text.at(i));
+		menu->SetChar(x, MiddleY -5, text.at(i));
 	}
 	for (size_t i = 0, x = MiddleX + text.size() - text1.size() ; i < text1.size(); x++, i++)
 	{
-		menu.SetChar(x, MiddleY , text1.at(i));
+		menu->SetChar(x, MiddleY , text1.at(i));
 	}
 	for (size_t i = 0, x = MiddleX + text.size()  - text1.size(); i < text2.size(); x++, i++)
 	{
-		menu.SetChar(x, MiddleY + 1, text2.at(i));
+		menu->SetChar(x, MiddleY + 1, text2.at(i));
 	}
 	for (size_t i = 0, x = MiddleX + text.size() - text1.size(); i < text3.size(); x++, i++)
 	{
-		menu.SetChar(x, MiddleY + 2, text3.at(i));
+		menu->SetChar(x, MiddleY + 2, text3.at(i));
 	}
 
 	for (size_t i = 0, x = MiddleX - text4.size() / 2; i < text4.size(); x++, i++)
 	{
-		menu.SetChar(x, ScreenY -2, text4.at(i));
+		menu->SetChar(x, ScreenY -2, text4.at(i));
 	}
 
-	MENU++;
 }
 
 void Game::GameOver()
 {
 	std::string gm_ov = "GAME OVER";
-	for (unsigned int i = 0, x = MiddleBoardX - gm_ov.size()/2; i < gm_ov.size(); x++, i++)
+	for (size_t i = 0, x = MiddleBoardX - gm_ov.size()/2; i < gm_ov.size(); x++, i++)
 	{
-		game_over.SetChar(x, MiddleBoardY, gm_ov.at(i));
+		game_over->SetChar(x, MiddleBoardY, gm_ov.at(i));
 	}
 	std::string score = "SCORE";
 	for (size_t i = 0, x = ScorePanelMiddleX - score.size() / 2; i < score.size(); x++, i++)
 	{
-		game_over.SetChar(x, ScorePanelMiddleY, score.at(i));
+		game_over->SetChar(x, ScorePanelMiddleY, score.at(i));
 	}
 	std::string text4 = "PRESS ANY BUTTON TO QUIT";
 	for (size_t i = 0, x = MiddleX - text4.size() / 2; i < text4.size(); x++, i++)
 	{
-		game_over.SetChar(x, ScreenY - 2, text4.at(i));
+		game_over->SetChar(x, ScreenY - 2, text4.at(i));
 	}
 
-	drawScore(&game_over);
+	drawScore(game_over);
 };
 
 void Game::Win()
@@ -319,25 +317,25 @@ void Game::Win()
 	std::string congr_str = "CONGRATULATIONS";
 	for (size_t i = 0, x = MiddleBoardX - congr_str.size()/2; i < congr_str.size(); x++, i++)
 	{
-		win.SetChar(x, MiddleBoardY , congr_str.at(i));
+		win->SetChar(x, MiddleBoardY , congr_str.at(i));
 	}
 
 	std::string win_str = "YOU WIN";
 	for (size_t i = 0, x = MiddleBoardX - congr_str.size()/4; i < win_str.size(); x++, i++)
 	{
-		win.SetChar(x, MiddleBoardY +1, win_str.at(i));
+		win->SetChar(x, MiddleBoardY +1, win_str.at(i));
 	}
 	std::string text4 = "PRESS ANY BUTTON TO QUIT";
 	for (size_t i = 0, x = MiddleX - text4.size() / 2; i < text4.size(); x++, i++)
 	{
-		win.SetChar(x, ScreenY - 2, text4.at(i));
+		win->SetChar(x, ScreenY - 2, text4.at(i));
 	}
 
 	std::string score = "SCORE";
 	for (size_t i = 0, x = ScorePanelMiddleX - score.size() / 2; i < score.size(); x++, i++)
 	{
-		win.SetChar(x, ScorePanelMiddleY, score.at(i));
+		win->SetChar(x, ScorePanelMiddleY, score.at(i));
 	}
-	drawScore(&win);
+	drawScore(win);
 
 }
