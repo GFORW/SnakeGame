@@ -1,3 +1,3 @@
 ## Snake Game for Console
 
-![](SnakeGame.gif)
+![](./resources/SnakeGame.gif)

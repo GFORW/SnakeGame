@@ -1,5 +1,5 @@
-﻿#include "game.h"
-
+﻿#pragma once
+#include "game.h"
 
 int main()
 {
