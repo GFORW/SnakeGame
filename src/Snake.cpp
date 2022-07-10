@@ -11,9 +11,7 @@ Snake::~Snake()
 {
 }
 
-void Snake::addPiece() 
+void Snake::addPiece()
 {
-	ptrBody->resize(ptrBody->size() + 1);
-	ptrBody->erase(ptrBody->begin() + 1, ptrBody->end());
-	ptrBody->insert(ptrBody->begin()+1, ptrOldBody->begin(), ptrOldBody->end());
+	ptrBody->push_back(ptrOldBody->back());
 }

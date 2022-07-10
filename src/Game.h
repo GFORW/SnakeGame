@@ -12,13 +12,13 @@ constexpr auto apple = L'a';
 class Game : public CnsFramework
 {
 public:
-	Game(const int& Xsize = 50, const int& Ysize = 25, const std::chrono::nanoseconds tick_ms = 160ms);
+	Game(const int& Xsize = 50, const int& Ysize = 25, const std::chrono::nanoseconds tick_ms = 200ms);
 	~Game();
 private:
-	void KeyPressed(const int btnCode) const;
-	void Update();
+	void KeyPressed(const int& Code) override;
+	void Update() override;
 	void Collision();
-	bool Handle_Events();
+	bool Handle_Events() override;
 
 	void drawMenu(); 
 	void drawSnake();
@@ -40,10 +40,10 @@ private:
 
 	std::unique_ptr<Snake> ptrSnake;
 
-	GameState *  game;
-	GameState *  menu;
-	GameState *  game_over;
-	GameState *  win;
+	GameState*  game;
+	GameState*  menu;
+	GameState*  game_over;
+	GameState*  win;
 };
 
 enum ENV
@@ -54,18 +54,15 @@ enum ENV
 	APPLE_PLACED = (1 << 3)
 };
 
-namespace
+namespace RANDOM
 {
-	namespace RANDOM
-	{
-		std::random_device rd;
-		std::seed_seq ss{ rd(), rd(), rd(), rd(), rd(), rd(), rd(), rd() };
-		std::mt19937 rEng{ ss };
+	static std::random_device rd;
+	static std::seed_seq ss{ rd(), rd(), rd(), rd(), rd(), rd(), rd(), rd() };
+	static std::mt19937 rEng{ ss };
 
-		inline int get_random(const int& min, const int& max)
-		{
-			std::uniform_int_distribution<int> distr1{ min, max };
-			return distr1(rEng);
-		};
-	}
+	static inline int get_random(const int& min, const int& max)
+	{
+		std::uniform_int_distribution<int> distr{ min, max };
+		return distr(rEng);
+	};
 }
