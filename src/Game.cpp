@@ -23,13 +23,15 @@ Game::Game(const int& Xsize, const int& Ysize, const std::chrono::nanoseconds ti
 
 	current_state = menu;
 
-	ptrSnake = std::make_unique<Snake>(RANDOM::get_random(1, ScorePanelStartX), RANDOM::get_random(1, ScreenY - 2));
+	ptrSnake = std::make_unique<Snake>(RANDOM::get_random(3, ScorePanelStartX-3), RANDOM::get_random(3, ScreenY - 4)); // spawn away from the border
+
+	ptrSnake->ptrBody->reserve(WIN_CONDITION);
+	ptrSnake->ptrOldBody->reserve(WIN_CONDITION);
 
 	drawMenu();
 	drawTable();
 	drawApple();
 	drawScore(game);
-
 }
 
 Game::~Game()
@@ -40,22 +42,22 @@ Game::~Game()
 	delete win;
 }
 
-void Game::KeyPressed(const int btnCode) const
+void Game::KeyPressed(const int& Code)
 {
 	ptrSnake->prev_dir = ptrSnake->dir;
-	if ((btnCode == int('W')) || (btnCode == int('w'))) //w
+	if (GetAsyncKeyState('W') & 0x01) //w
 	{
 		ptrSnake->dir = Direction::up;
 	}
-	else if ((btnCode == int('S')) || (btnCode == int('s')))//s
+	else if (GetAsyncKeyState('S') & 0x01) //s
 	{
 		ptrSnake->dir = Direction::down;
 	}
-	else if ((btnCode == int('A')) || (btnCode == int('a'))) //a
+	else if (GetAsyncKeyState('A') & 0x01) //a
 	{
 		ptrSnake->dir = Direction::left;
 	}
-	else if ((btnCode == int('D')) || (btnCode == int('d'))) //d
+	else if (GetAsyncKeyState('D') & 0x01) //d
 	{
 		ptrSnake->dir = Direction::right;
 	}
@@ -83,12 +85,11 @@ bool Game::Handle_Events()
 		std::cin.ignore();
 		return false;
 	}
-
 	return true;
 }
 void Game::Update()
 {
-	const std::string state_name = current_state->name;
+	const std::string& state_name = current_state->name;
 	drawFPS();
 	if (state_name == "menu")
 	{
@@ -134,10 +135,10 @@ void Game::drawTable()
 				game->SetChar(x, y, bounds);
 		}
 	}
-	std::string score = "SCORE";
+	const std::string score = "SCORE";
 	for (size_t i = 0, x = ScorePanelMiddleX - score.size() / 2; i < score.size(); x++, i++)
 	{
-		game->SetChar(x, ScorePanelMiddleY, score.at(i));
+		game->SetChar(x, ScorePanelMiddleY, score[i]);
 	}
 	drawScore(game);
 }
@@ -158,21 +159,21 @@ void Game::drawApple()
 	}
 }
 
-void Game::drawScore(GameState * const state)
+void Game::drawScore(GameState* const state)
 {
-	std::wstring scr = std::to_wstring(SCORE);
+	const std::wstring scr = std::to_wstring(SCORE);
 	for (unsigned int i = 0, x = ScorePanelMiddleX; i < scr.size(); x++, i++)
 	{
 		state->SetChar(x, ScorePanelMiddleY+1, scr[i]);
 	}
 }
 
-void Game::move()  
+void Game::move()
 {
-	// move tail
+	//move tail
 	for (size_t i = 1; i < ptrSnake->ptrBody->size(); i++)
 	{
-		ptrSnake->ptrBody->at(i) = ptrSnake->ptrOldBody->at(i - 1);
+		(*ptrSnake->ptrBody)[i] = (*ptrSnake->ptrOldBody)[i - 1];
 	}
 }
 
@@ -185,12 +186,12 @@ void Game::drawFPS()
 
 void Game::Collision()
 {
-	COORD head{ ptrSnake->ptrBody->at(0) };
+	COORD head{ (*ptrSnake->ptrBody)[0]};
 	COORD neck{};
 	if (ptrSnake->ptrBody->size()>1)
-		neck = ptrSnake->ptrBody->at(1);
+		neck = (*ptrSnake->ptrBody)[1];
 	
-	*ptrSnake->ptrOldBody = *ptrSnake->ptrBody;
+	ptrSnake->ptrOldBody->assign(ptrSnake->ptrBody->begin(), ptrSnake->ptrBody->end());
 
 	switch (ptrSnake->dir)
 	{
@@ -226,69 +227,65 @@ void Game::Collision()
 		env |= GAME_OVER;
 	}
 
-	if (game->GetChar(head.X, head.Y) == apple) // redo logic for score updare
+	if (game->GetChar(head.X, head.Y) == apple) // redo logic for score update
 	{
 		ptrSnake->addPiece();
 		env &= ~APPLE_PLACED;
 		SCORE++;
 		drawScore(game);
-		ChangeTickSpeed(tick -= 10ms);
+		if((tick - 10ms)>0ms)
+			ChangeTickSpeed(tick - 10ms);
 		if (SCORE == WIN_CONDITION)
 		{
 			env |= WIN;
 			current_state = win;
 		}
 	}
-	ptrSnake->ptrBody->at(0) = head; //  step
+	(*ptrSnake->ptrBody)[0] = head; //  step
 }
 
 void Game::drawSnake()
 {
-
 	Collision();
 	move();
-	if ((env & GAME_OVER))
+	if (env & GAME_OVER)
 		return;
-	for (auto piece : *ptrSnake->ptrOldBody.get())  	// delete old snake
+	for (auto& piece : *ptrSnake->ptrOldBody.get())  	// delete old snake
 	{
 		game->SetChar(piece.X, piece.Y, L' ');
 	}
-
-	for (auto piece : *ptrSnake->ptrBody.get())  // draw new snake
+	for (auto& piece : *ptrSnake->ptrBody.get())  // draw new snake
 	{
 		game->SetChar(piece.X, piece.Y, snake);
 	}
 }
 
-
 void Game::drawMenu()
 {
 	const std::string text = "SNAKE GAME";
-	const std::string text1 = " - TO WIN - EAT " + std::to_string(WIN_CONDITION) + " APPLES";
-	const std::string text2 = " - DO NOT EAT BORDERS OR YOUR TAIL";
-	const std::string text3 = " - EACH APPLE INCREASES YOUR SPEED";
-	const std::string text4 = "PRESS ANY BUTTON TO START";
-
 	for (size_t i = 0, x = MiddleX - text.size() /2; i < text.size(); x++, i++)
 	{
-		menu->SetChar(x, MiddleY - 5, text.at(i));
+		menu->SetChar(x, MiddleY - 5, text[i]);
 	}
+	const std::string text1 = " - TO WIN - EAT " + std::to_string(WIN_CONDITION) + " APPLES";
 	for (size_t i = 0, x = MiddleX + text.size() - text1.size() ; i < text1.size(); x++, i++)
 	{
-		menu->SetChar(x, MiddleY , text1.at(i));
+		menu->SetChar(x, MiddleY , text1[i]);
 	}
+	const std::string text2 = " - DO NOT EAT BORDERS OR YOUR TAIL";
 	for (size_t i = 0, x = MiddleX + text.size()  - text1.size(); i < text2.size(); x++, i++)
 	{
-		menu->SetChar(x, MiddleY + 1, text2.at(i));
+		menu->SetChar(x, MiddleY + 1, text2[i]);
 	}
+	const std::string text3 = " - EACH APPLE INCREASES YOUR SPEED";
 	for (size_t i = 0, x = MiddleX + text.size() - text1.size(); i < text3.size(); x++, i++)
 	{
-		menu->SetChar(x, MiddleY + 2, text3.at(i));
+		menu->SetChar(x, MiddleY + 2, text3[i]);
 	}
-
+	const std::string text4 = "PRESS ANY BUTTON TO START";
 	for (size_t i = 0, x = MiddleX - text4.size() / 2; i < text4.size(); x++, i++)
 	{
-		menu->SetChar(x, ScreenY -2, text4.at(i));
+		menu->SetChar(x, ScreenY -2, text4[i]);
 	}
 }
 
@@ -297,19 +294,18 @@ void Game::GameOver()
 	const std::string gm_ov = "GAME OVER";
 	for (size_t i = 0, x = MiddleBoardX - gm_ov.size()/2; i < gm_ov.size(); x++, i++)
 	{
-		game_over->SetChar(x, MiddleBoardY, gm_ov.at(i));
+		game_over->SetChar(x, MiddleBoardY, gm_ov[i]);
 	}
 	const std::string score = "SCORE";
 	for (size_t i = 0, x = ScorePanelMiddleX - score.size() / 2; i < score.size(); x++, i++)
 	{
-		game_over->SetChar(x, ScorePanelMiddleY, score.at(i));
+		game_over->SetChar(x, ScorePanelMiddleY, score[i]);
 	}
-	const std::string text4 = "PRESS ANY BUTTON TO QUIT";
-	for (size_t i = 0, x = MiddleX - text4.size() / 2; i < text4.size(); x++, i++)
+	const std::string text = "PRESS ANY BUTTON TO QUIT";
+	for (size_t i = 0, x = MiddleX - text.size() / 2; i < text.size(); x++, i++)
 	{
-		game_over->SetChar(x, ScreenY - 2, text4.at(i));
+		game_over->SetChar(x, ScreenY - 2, text[i]);
 	}
-
 	drawScore(game_over);
 };
 
@@ -318,24 +314,22 @@ void Game::Win()
 	const std::string congr_str = "CONGRATULATIONS";
 	for (size_t i = 0, x = MiddleBoardX - congr_str.size()/2; i < congr_str.size(); x++, i++)
 	{
-		win->SetChar(x, MiddleBoardY , congr_str.at(i));
+		win->SetChar(x, MiddleBoardY , congr_str[i]);
 	}
-
 	const std::string win_str = "YOU WIN";
 	for (size_t i = 0, x = MiddleBoardX - congr_str.size()/4; i < win_str.size(); x++, i++)
 	{
-		win->SetChar(x, MiddleBoardY +1, win_str.at(i));
+		win->SetChar(x, MiddleBoardY +1, win_str[i]);
 	}
-	const std::string text4 = "PRESS ANY BUTTON TO QUIT";
-	for (size_t i = 0, x = MiddleX - text4.size() / 2; i < text4.size(); x++, i++)
+	const std::string text = "PRESS ANY BUTTON TO QUIT";
+	for (size_t i = 0, x = MiddleX - text.size() / 2; i < text.size(); x++, i++)
 	{
-		win->SetChar(x, ScreenY - 2, text4.at(i));
+		win->SetChar(x, ScreenY - 2, text[i]);
 	}
-
 	const std::string score = "SCORE";
 	for (size_t i = 0, x = ScorePanelMiddleX - score.size() / 2; i < score.size(); x++, i++)
 	{
-		win->SetChar(x, ScorePanelMiddleY, score.at(i));
+		win->SetChar(x, ScorePanelMiddleY, score[i]);
 	}
 	drawScore(win);
 }
